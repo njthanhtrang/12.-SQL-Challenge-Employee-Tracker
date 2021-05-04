@@ -16,7 +16,7 @@ class DB {
     return this.connection.promise().query("SELECT * FROM employee");
   }
   addADepartment(departmentName) {
-      return this.connection.promise().query("INSERT INTO department (name) SET ?", departmentName);
+      return this.connection.promise().query("INSERT INTO department SET ?", departmentName);
   }
 
 }

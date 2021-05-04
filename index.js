@@ -81,7 +81,7 @@ const addDepartment = async () => {
             validate: validateDepartment
           },
     ])
-    answer.name = departmentName;
+    const departmentName = answer.name;
     DB.addADepartment(departmentName).then(([rows]) => {
         const addedDepartment = rows;
         console.table(addedDepartment);
