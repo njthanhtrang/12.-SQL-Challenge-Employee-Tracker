@@ -7,12 +7,18 @@ class DB {
     this.connection = connection;
   }
   findAllDepartments() {
-      return 
+    return this.connection.promise().query("SELECT * FROM department");
   }
-
+  findAllRoles() {
+    return this.connection.promise().query("SELECT * FROM roles");
+  }
   findAllEmployees() {
     return this.connection.promise().query("SELECT * FROM employee");
   }
+  addADepartment(departmentName) {
+      return this.connection.promise().query("INSERT INTO department (name) SET ?", departmentName);
+  }
+
 }
 
 module.exports = new DB(connection);
