@@ -85,7 +85,6 @@ const addDepartment = async () => {
   console.log("answer.name", answer.name);
   const departmentName = answer.name;
   db.addADepartment(departmentName).then(([rows]) => {
-    console.log("response", response);
     const addedDepartment = rows;
     console.table(addedDepartment);
     return mainMenu;
