@@ -2,7 +2,7 @@
 const connection = require("./connection");
 
 // DB commands, ORM
-class DB {
+class db {
   constructor(connection) {
     this.connection = connection;
   }
@@ -16,9 +16,9 @@ class DB {
     return this.connection.promise().query("SELECT * FROM employee");
   }
   addADepartment(departmentName) {
-      return this.connection.promise().query("INSERT INTO department SET ?", departmentName);
+      return this.connection.promise().query("INSERT INTO department (name) VALUES (?)", [departmentName]);
   }
 
 }
 
-module.exports = new DB(connection);
+module.exports = new db(connection);
