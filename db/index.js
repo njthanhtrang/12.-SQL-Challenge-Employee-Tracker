@@ -22,8 +22,8 @@ class db {
   addARole(roleTitle, roleSalary, roleDepartmentId) {
       return this.connection.promise().query("INSERT INTO roles (title, salary, department_id) VALUES (?, ?, ?)", [roleTitle, roleSalary, roleDepartmentId]);
   }
-  addAnEmployee(firstName, lastName, roleId, employeeManagerId) {
-      return this.connection.promise().query("INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)", [firstName, lastName, roleId, employeeManagerId]);
+  addAnEmployee(answer) {
+      return this.connection.promise().query("INSERT INTO employee SET ?", answer);
   }
 }
 

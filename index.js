@@ -2,6 +2,7 @@ const inquirer = require("inquirer");
 const db = require("./db");
 const cTable = require("console.table");
 const { findAllDepartments } = require("./db");
+const { identity } = require("rxjs");
 
 const mainMenu = async () => {
   const answer = await inquirer.prompt([
@@ -139,45 +140,58 @@ const addRole = async () => {
 const addEmployee = async () => {
   const [rowsA] = await db.findAllRoles();
   console.table(rowsA);
-  const roleChoices = rowsA.map(item => item.title);
+  const roleChoices = rowsA.map(({ id, title }) => ({
+    name: title,
+    value: id,
+  }));
   console.log(roleChoices);
 
   const [rowsB] = await db.findAllEmployees();
-  const employeeChoices = rowsB.map(({ first_name, last_name }) => ( first_name + " " + last_name));
+  const employeeChoices = rowsB.map(({ id, first_name, last_name }) => ({
+    name: `${first_name} ${last_name}`,
+    value: id,
+  }));
   console.log(employeeChoices);
+  const managerChoices = [...employeeChoices, { name: "Null" }];
+  console.log(managerChoices);
   const answer = await inquirer.prompt([
     {
       type: "input",
-      name: "firstName",
+      name: "first_name",
       message: "What is the employee's first name?",
       validate: validateInput,
     },
     {
       type: "input",
-      name: "lastName",
+      name: "last_name",
       message: "What is the employee's last name?",
       validate: validateInput,
     },
     {
       type: "list",
-      name: "roleId",
+      name: "role_id",
       message: "What is this employee's role?",
       choices: roleChoices,
     },
     {
+      type: "confirm",
+      name: "managerOrNot",
+      message: "Does this employee have a manager?",
+      default: true,
+    },
+    {
       type: "list",
-      name: "employeeManagerId",
+      name: "manager_id",
+      when: function (answers) {
+        return answers.managerOrNot === true;
+      },
       message: "Who is this employee's manager?",
-      choices: employeeChoices,
+      choices: managerChoices,
     },
   ]);
-  answer.roleId
-  db.addAnEmployee(
-    answer.firstName,
-    answer.lastName,
-    answer.roleId,
-    answer.employeeManagerId
-  ).then(() => {
+  delete answer.managerOrNot;
+  console.log(answer);
+  db.addAnEmployee(answer).then(() => {
     db.findAllEmployees().then(([rows]) => {
       console.table(rows);
       return mainMenu();
