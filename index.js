@@ -24,7 +24,7 @@ const mainMenu = async () => {
         // "Delete a department",
         // "Delete a role",
         // "Delete an employee",
-        // "Exit",
+        "Exit",
       ],
     },
   ]);
@@ -103,7 +103,7 @@ const addRole = async () => {
   // same as .then() above, gives us a Tuple
   const [rows] = await db.findAllDepartments();
   console.table(rows);
-  const departmentChoices = rows.map(({ name}) => ({ name, value: id }));
+  const departmentChoices = rows.map(({ name, id }) => ({ name, value: id }));
   console.log(departmentChoices);
   const answer = await inquirer.prompt([
     {
@@ -139,11 +139,11 @@ const addRole = async () => {
 const addEmployee = async () => {
   const [rowsA] = await db.findAllRoles();
   console.table(rowsA);
-  const roleChoices = rowsA.map(({ title, salary }) => ({ title, salary }));
+  const roleChoices = rowsA.map(item => item.title);
   console.log(roleChoices);
 
   const [rowsB] = await db.findAllEmployees();
-  const employeeChoices = rowsB.map(({ first_name, last_name }) => ({ first_name, last_name}));
+  const employeeChoices = rowsB.map(({ first_name, last_name }) => ( first_name + " " + last_name));
   console.log(employeeChoices);
   const answer = await inquirer.prompt([
     {
@@ -160,22 +160,23 @@ const addEmployee = async () => {
     },
     {
       type: "list",
-      name: "role",
+      name: "roleId",
       message: "What is this employee's role?",
       choices: roleChoices,
     },
     {
       type: "list",
-      name: "manager",
+      name: "employeeManagerId",
       message: "Who is this employee's manager?",
       choices: employeeChoices,
     },
   ]);
+  answer.roleId
   db.addAnEmployee(
     answer.firstName,
     answer.lastName,
-    answer.role,
-    answer.manager
+    answer.roleId,
+    answer.employeeManagerId
   ).then(() => {
     db.findAllEmployees().then(([rows]) => {
       console.table(rows);
