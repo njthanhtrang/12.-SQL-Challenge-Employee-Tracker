@@ -1,9 +1,11 @@
 const inquirer = require("inquirer");
 const db = require("./db");
-const cTable = require("console.table");
-const { findAllDepartments } = require("./db");
-const { identity } = require("rxjs");
+require("console.table");
 
+const exit = () => {
+  console.log("Bye!");
+  process.exit(0);
+};
 const mainMenu = async () => {
   const answer = await inquirer.prompt([
     {
@@ -11,43 +13,49 @@ const mainMenu = async () => {
       name: "menu",
       message: "What would you like to do?",
       choices: [
-        "View all departments",
-        "View all roles",
-        "View all employees",
-        "Add a department",
-        "Add a role",
-        "Add an employee",
-        "Update an employee role",
-        // bonus
-        // "Update employee managers",
-        // "View employees by manager",
-        // "View employees by department",
-        // "Delete a department",
-        // "Delete a role",
-        // "Delete an employee",
-        "Exit",
+        { name: "View all departments", value: viewDepartments },
+        { name: "View all roles", value: viewRoles },
+        { name: "View all employees", value: viewEmployees },
+        { name: "Add a department", value: addDepartment },
+        { name: "Add a role", value: addRole },
+        { name: "Add an employee", value: addEmployee },
+        { name: "Update an employee role", value: updateEmployeeRole },
+        { name: "Update employee manager", value: updateEmployeeManager },
+        { name: "View employees by manager", value: viewByManager },
+        { name: "View employees by department", value: viewByDepartment },
+        { name: "Delete a department", value: deleteDepartment },
+        { name: "Delete a role", value: deleteRole },
+        { name: "Delete an employee", value: deleteEmployee },
+        { name: "Exit", value: exit },
       ],
     },
   ]);
-  switch (answer.menu) {
-    case "View all departments":
-      return viewDepartments();
-    case "View all roles":
-      return viewRoles();
-    case "View all employees":
-      return viewEmployees();
-    case "Add a department":
-      return addDepartment();
-    case "Add a role":
-      return addRole();
-    case "Add an employee":
-      return addEmployee();
-    case "Update an employee role":
-      return updateEmployee();
-    case "Exit":
-      console.log("Bye!");
-      break;
-  }
+
+  answer.menu();
+
+  //   switch (answer.menu) {
+  //     case "View all departments":
+  //       return viewDepartments();
+  //     case "View all roles":
+  //       return viewRoles();
+  //     case "View all employees":
+  //       return viewEmployees();
+  //     case "Add a department":
+  //       return addDepartment();
+  //     case "Add a role":
+  //       return addRole();
+  //     case "Add an employee":
+  //       return addEmployee();
+  //     case "Update an employee role":
+  //       return updateEmployeeRole();
+  //     case "Update employee manager":
+  //       return updateEmployeeManager();
+  //     case "View employees by manager":
+  //       return viewByManager();
+  //     case "Exit":
+  //       console.log("Bye!");
+  //       break;
+  //   }
 };
 
 function viewDepartments() {
@@ -137,6 +145,10 @@ const addRole = async () => {
   });
 };
 
+function mapEmployeeChoices({ id, first_name, last_name }) {
+  return { name: `${first_name} ${last_name}`, value: id };
+}
+
 const addEmployee = async () => {
   const [rowsA] = await db.findAllRoles();
   console.table(rowsA);
@@ -146,12 +158,11 @@ const addEmployee = async () => {
   }));
   console.log(roleChoices);
 
+  //   immutability
   const [rowsB] = await db.findAllEmployees();
-  const employeeChoices = rowsB.map(({ id, first_name, last_name }) => ({
-    name: `${first_name} ${last_name}`,
-    value: id,
-  }));
+  const employeeChoices = rowsB.map(mapEmployeeChoices);
   console.log(employeeChoices);
+
   const managerChoices = [...employeeChoices, { name: "Null" }];
   console.log(managerChoices);
   const answer = await inquirer.prompt([
@@ -198,5 +209,171 @@ const addEmployee = async () => {
     });
   });
 };
+
+const updateEmployeeRole = async () => {
+  const [rowsA] = await db.findAllRoles();
+  console.table(rowsA);
+  const roleChoices = rowsA.map(({ id, title }) => ({
+    name: title,
+    value: id,
+  }));
+  console.log(roleChoices);
+
+  const [rowsB] = await db.findAllEmployees();
+  const employeeChoices = rowsB.map(mapEmployeeChoices);
+  console.log(employeeChoices);
+  const answer = await inquirer.prompt([
+    {
+      type: "list",
+      name: "employee",
+      message: "Which employee's role do you want to update?",
+      choices: employeeChoices,
+    },
+    {
+      type: "list",
+      name: "role",
+      message: "What is this employee's new role?",
+      choices: roleChoices,
+    },
+  ]);
+  console.log(answer);
+  db.updateAnEmployeeRole(answer.role, answer.employee).then(() => {
+    db.findAllEmployees().then(([rows]) => {
+      console.table(rows);
+      return mainMenu();
+    });
+  });
+};
+
+const updateEmployeeManager = async () => {
+  const [rowsB] = await db.findAllEmployees();
+  const employeeChoices = rowsB.map(mapEmployeeChoices);
+  console.log(employeeChoices);
+  const { employee } = await inquirer.prompt([
+    {
+      type: "list",
+      name: "employee",
+      message: "Which employee's manager do you want to update?",
+      choices: employeeChoices,
+    },
+  ]);
+  const [managerRows] = await db.findAllManagers(employee);
+  const managerChoices = managerRows.map(mapEmployeeChoices);
+  //   update manager choices, not immutable
+  managerChoices.push({ name: "No manager selected", value: null });
+  //   renaming destructured property manager as data
+  //   const {manager:data} = await inquirer.prompt([
+  //   destructuring property and defining as variable
+  const { manager } = await inquirer.prompt([
+    {
+      type: "list",
+      name: "manager",
+      message: "Who is this employee's new manager?",
+      choices: managerChoices,
+    },
+  ]);
+  db.updateAnEmployeeManager(manager, employee).then(() => {
+    db.findAllEmployees().then(([rows]) => {
+      console.table(rows);
+      return mainMenu();
+    });
+  });
+};
+
+const viewByManager = async () => {
+  const [allEmployees] = await db.findAllEmployees();
+  const managerChoices = allEmployees.map(mapEmployeeChoices);
+  const { manager } = await inquirer.prompt([
+    {
+      type: "list",
+      name: "manager",
+      message: "Which manager's employees do you want to see?",
+      choices: managerChoices,
+    },
+  ]);
+  const [managersEmployees] = await db.findByManager(manager);
+  console.table(managersEmployees);
+  return mainMenu();
+};
+
+// SQL query not working
+const viewByDepartment = async () => {
+  const [allDepartments] = await db.findAllDepartments();
+  console.table(allDepartments);
+  const departmentChoices = allDepartments.map(({ id, name }) => ({
+    id,
+    name,
+  }));
+  const { department } = await inquirer.prompt([
+    {
+      type: "list",
+      name: "department",
+      message: "Which department's employees do you want to see?",
+      choices: departmentChoices,
+    },
+  ]);
+  const [departmentEmployees] = await db.findByDepartment(department);
+  console.table(departmentEmployees);
+  return mainMenu();
+};
+
+const deleteDepartment = async () => {
+  const [allDepartments] = await db.findAllDepartments();
+  console.table(allDepartments);
+  const departmentChoices = allDepartments.map(({ id, name }) => ({
+    id,
+    name,
+  }));
+  const { department } = await inquirer.prompt([
+    {
+      type: "list",
+      name: "department",
+      message: "Which department do you want to delete?",
+      choices: departmentChoices,
+    },
+  ]);
+  const [updatedDepartments] = await db.deleteADepartment(department);
+  console.table(updatedDepartments);
+  return mainMenu();
+};
+
+const deleteRole = async () => {
+    const [rowsA] = await db.findAllRoles();
+    console.table(rowsA);
+    const roleChoices = rowsA.map(({ id, title }) => ({
+      name: title,
+      value: id,
+    }));
+    console.log(roleChoices);
+    const { roles } = await inquirer.prompt([
+      {
+        type: "list",
+        name: "role",
+        message: "Which role do you want to delete?",
+        choices: roleChoices,
+      },
+    ]);
+    const [updatedRoles] = await db.deleteARole(roles);
+    console.table(updatedRoles);
+    return mainMenu();
+  };
+
+  const deleteEmployee = async () => {
+    const [rowsA] = await db.findAllEmployees();
+    console.table(rowsA);
+    const employeeChoices = rowsA.map(mapEmployeeChoices);
+    console.table(employeeChoices);
+    const { employee } = await inquirer.prompt([
+      {
+        type: "list",
+        name: "employee",
+        message: "Which employee do you want to delete?",
+        choices: employeeChoices,
+      },
+    ]);
+    const [updatedEmployees] = await db.deleteAnEmployee(employee);
+    console.table(updatedEmployees);
+    return mainMenu();
+  };
 
 mainMenu();
