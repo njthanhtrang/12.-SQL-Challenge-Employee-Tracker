@@ -296,13 +296,12 @@ const viewByManager = async () => {
   return mainMenu();
 };
 
-// SQL query not working
 const viewByDepartment = async () => {
   const [allDepartments] = await db.findAllDepartments();
   console.table(allDepartments);
   const departmentChoices = allDepartments.map(({ id, name }) => ({
-    id,
-    name,
+    name: name,
+    value: id,
   }));
   const { department } = await inquirer.prompt([
     {
@@ -321,9 +320,10 @@ const deleteDepartment = async () => {
   const [allDepartments] = await db.findAllDepartments();
   console.table(allDepartments);
   const departmentChoices = allDepartments.map(({ id, name }) => ({
-    id,
-    name,
+    name: name,
+    value: id,
   }));
+  console.table(departmentChoices);
   const { department } = await inquirer.prompt([
     {
       type: "list",
@@ -332,48 +332,58 @@ const deleteDepartment = async () => {
       choices: departmentChoices,
     },
   ]);
-  const [updatedDepartments] = await db.deleteADepartment(department);
-  console.table(updatedDepartments);
-  return mainMenu();
+  //   const [updatedDepartments] = await db.deleteADepartment(department);
+  //   console.table(updatedDepartments);
+  //   return mainMenu();
+
+  db.deleteADepartment(department).then(() => {
+    db.findAllDepartments().then(([rows]) => {
+      console.table(rows);
+      return mainMenu();
+    });
+  });
 };
 
 const deleteRole = async () => {
-    const [rowsA] = await db.findAllRoles();
-    console.table(rowsA);
-    const roleChoices = rowsA.map(({ id, title }) => ({
-      name: title,
-      value: id,
-    }));
-    console.log(roleChoices);
-    const { roles } = await inquirer.prompt([
-      {
-        type: "list",
-        name: "role",
-        message: "Which role do you want to delete?",
-        choices: roleChoices,
-      },
-    ]);
-    const [updatedRoles] = await db.deleteARole(roles);
-    console.table(updatedRoles);
-    return mainMenu();
-  };
+  const [rowsA] = await db.findAllRoles();
+  console.table(rowsA);
+  const roleChoices = rowsA.map(({ id, title }) => ({
+   name: title, value: id
+  }));
+  console.log(roleChoices);
+  const { roles } = await inquirer.prompt([
+    {
+      type: "list",
+      name: "role",
+      message: "Which role do you want to delete?",
+      choices: roleChoices,
+    },
+  ]);
+  
+  db.deleteARole(roles).then(() => {
+    db.findAllRoles().then(([rows]) => {
+      console.table(rows);
+      return mainMenu();
+    });
+  });
+};
 
-  const deleteEmployee = async () => {
-    const [rowsA] = await db.findAllEmployees();
-    console.table(rowsA);
-    const employeeChoices = rowsA.map(mapEmployeeChoices);
-    console.table(employeeChoices);
-    const { employee } = await inquirer.prompt([
-      {
-        type: "list",
-        name: "employee",
-        message: "Which employee do you want to delete?",
-        choices: employeeChoices,
-      },
-    ]);
-    const [updatedEmployees] = await db.deleteAnEmployee(employee);
-    console.table(updatedEmployees);
-    return mainMenu();
-  };
+const deleteEmployee = async () => {
+  const [rowsA] = await db.findAllEmployees();
+  console.table(rowsA);
+  const employeeChoices = rowsA.map(mapEmployeeChoices);
+  console.table(employeeChoices);
+  const { employee } = await inquirer.prompt([
+    {
+      type: "list",
+      name: "employee",
+      message: "Which employee do you want to delete?",
+      choices: employeeChoices,
+    },
+  ]);
+  const [updatedEmployees] = await db.deleteAnEmployee(employee);
+  console.table(updatedEmployees);
+  return mainMenu();
+};
 
 mainMenu();
