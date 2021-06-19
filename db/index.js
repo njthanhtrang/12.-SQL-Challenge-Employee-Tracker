@@ -59,7 +59,7 @@ addADepartment(departmentName) {
   }
 //   not a left join? join on employee itself??
   findByManager(managerId) {
-    return this.connection.promise().query("SELECT * FROM employee WHERE manager_id = ?", [managerId]);
+    return this.connection.promise().query(`SELECT employee.id, employee.manager_id, CONCAT(employee.first_name, ' ' , employee.last_name) AS name FROM employee LEFT JOIN roles on employee.role_id = roles.id WHERE manager_id = ?`, [managerId]);
   }
 
   findByDepartment(departmentId) {
@@ -78,6 +78,9 @@ addADepartment(departmentName) {
 
   deleteAnEmployee(employeeId) {
     return this.connection.promise().query("DELETE FROM employee WHERE id = ?", [employeeId]);
+  }
+  findDepartmentBudget() {
+    return this.connection.promise().query("SELECT department.name AS department, department.id, SUM(salary) AS total_salary FROM employee LEFT JOIN roles on employee.role_id = roles.id LEFT JOIN department on roles.department_id = department.id GROUP BY department.id");
   }
 }
 

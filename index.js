@@ -26,6 +26,7 @@ const mainMenu = async () => {
         { name: "Delete a department", value: deleteDepartment },
         { name: "Delete a role", value: deleteRole },
         { name: "Delete an employee", value: deleteEmployee },
+        { name: "View total utilized budget by department", value: budgetByDepartment},
         { name: "Exit", value: exit },
       ],
     },
@@ -145,8 +146,8 @@ const addRole = async () => {
   });
 };
 
-function mapEmployeeChoices({ id, first_name, last_name }) {
-  return { name: `${first_name} ${last_name}`, value: id };
+function mapEmployeeChoices({ id, name }) {
+  return { name, value: id };
 }
 
 const addEmployee = async () => {
@@ -256,9 +257,13 @@ const updateEmployeeManager = async () => {
       message: "Which employee's manager do you want to update?",
       choices: employeeChoices,
     },
-  ]);
+  ])
   const [managerRows] = await db.findAllManagers(employee);
-  const managerChoices = managerRows.map(mapEmployeeChoices);
+  console.table(managerRows);
+  const managerChoices = managerRows.map(({ id, first_name, last_name }) => ({
+    name: `${first_name} ${last_name}`,
+    value: id
+  }));
   //   update manager choices, not immutable
   managerChoices.push({ name: "No manager selected", value: null });
   //   renaming destructured property manager as data
@@ -348,42 +353,57 @@ const deleteRole = async () => {
   const [rowsA] = await db.findAllRoles();
   console.table(rowsA);
   const roleChoices = rowsA.map(({ id, title }) => ({
-   name: title, value: id
+    name: title,
+    value: id,
   }));
   console.log(roleChoices);
-  const { roles } = await inquirer.prompt([
-    {
-      type: "list",
-      name: "role",
-      message: "Which role do you want to delete?",
-      choices: roleChoices,
-    },
-  ]);
-  
-  db.deleteARole(roles).then(() => {
-    db.findAllRoles().then(([rows]) => {
-      console.table(rows);
-      return mainMenu();
+  const response = await inquirer
+    .prompt([
+      {
+        type: "list",
+        name: "role",
+        message: "Which role do you want to delete?",
+        choices: roleChoices,
+      },
+    ])
+    .then((response) => {
+      db.deleteARole(response.role);
+        db.findAllRoles().then(([rows]) => {
+            console.table(rows);
+            return mainMenu();
+        });
     });
-  });
 };
 
 const deleteEmployee = async () => {
   const [rowsA] = await db.findAllEmployees();
   console.table(rowsA);
-  const employeeChoices = rowsA.map(mapEmployeeChoices);
+  const employeeChoices = rowsA.map(({ id, name }) => ({ name,
+    value: id,
+  }));
   console.table(employeeChoices);
-  const { employee } = await inquirer.prompt([
+  const response = await inquirer.prompt([
     {
       type: "list",
       name: "employee",
       message: "Which employee do you want to delete?",
       choices: employeeChoices,
     },
-  ]);
-  const [updatedEmployees] = await db.deleteAnEmployee(employee);
-  console.table(updatedEmployees);
-  return mainMenu();
+  ])
+  .then((response) => {
+    db.deleteAnEmployee(response.employee);
+      db.findAllEmployees().then(([rows]) => {
+          console.table(rows);
+          return mainMenu();
+      });
+  });
 };
+
+const budgetByDepartment = async () => {
+
+  const [departmentBudget] = await db.findDepartmentBudget();
+  console.table(departmentBudget);
+  return mainMenu();
+}
 
 mainMenu();
