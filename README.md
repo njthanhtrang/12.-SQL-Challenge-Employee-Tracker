@@ -60,6 +60,10 @@ Video Demonstration: https://youtu.be/Zqo4QObZ0s0
 
 Created by Jennifer Nguyen.
 
+## Questions
+For additional questions and information, please go to github.com/njthanhtrang/
+or reach out via email at njthanhtrang@gmail.com.
+
 ## License
 ​
 MIT License
