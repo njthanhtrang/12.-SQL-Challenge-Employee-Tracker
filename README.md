@@ -32,6 +32,7 @@ At a minimum, your project README needs a title and a short description explaini
 * [Installation](#installation)
 * [Usage](#usage)
 * [Credits](#credits)
+* [Questions](#questions)
 * [License](#license)
 ​
 ​
