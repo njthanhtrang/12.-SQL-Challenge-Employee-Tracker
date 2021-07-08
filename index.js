@@ -98,8 +98,8 @@ const addDepartment = async () => {
       validate: validateInput,
     },
   ]);
-  console.log("answer", answer);
-  console.log("answer.name", answer.name);
+  // console.log("answer", answer);
+  // console.log("answer.name", answer.name);
   const departmentName = answer.name;
   db.addADepartment(departmentName).then(() => {
     db.findAllDepartments().then(([rows]) => {
@@ -114,7 +114,7 @@ const addRole = async () => {
   const [rows] = await db.findAllDepartments();
   console.table(rows);
   const departmentChoices = rows.map(({ name, id }) => ({ name, value: id }));
-  console.log(departmentChoices);
+  // console.log(departmentChoices);
   const answer = await inquirer.prompt([
     {
       type: "input",
@@ -135,8 +135,8 @@ const addRole = async () => {
       choices: departmentChoices,
     },
   ]);
-  console.log("answer", answer);
-  console.log("answer.name", answer.name);
+  // console.log("answer", answer);
+  // console.log("answer.name", answer.name);
 
   db.addARole(answer.name, answer.salary, answer.department).then(() => {
     db.findAllRoles().then(([rows]) => {
