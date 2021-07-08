@@ -42,7 +42,9 @@ Clone the repository, navigate to the project folder on your CLI and run the fol
 
 ```npm install```
 ​
-## Usage no
+## Usage
+
+<img width="791" alt="Screen Shot 2021-07-07 at 5 39 25 PM" src="https://user-images.githubusercontent.com/77700824/124844871-47cb1e80-df4a-11eb-8467-9f3550bbb18e.png">
 ​
 Run the following command on your CLI to run the application:
 
@@ -52,9 +54,7 @@ Follow the prompts to create your company database!
 
 Video Demonstration: https://youtu.be/Zqo4QObZ0s0
 
-​
 ## Credits
-​
 * Inquirer package https://www.npmjs.com/package/inquirer
 * MySQL2 package https://www.npmjs.com/package/mysql2
 * console.table package https://www.npmjs.com/package/console.table
