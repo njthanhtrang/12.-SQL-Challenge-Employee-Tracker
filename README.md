@@ -49,7 +49,7 @@ Run the following command on your CLI to run the application:
 
 Follow the prompts to create your company database!
 
-Video Demonstration: 
+Video Demonstration: https://youtu.be/Zqo4QObZ0s0
 
 ​
 ## Credits
